@@ -98,7 +98,7 @@ test-python-universal-spark:
 	FULL_REPO_CONFIGS_MODULE=sdk.python.feast.infra.offline_stores.contrib.spark_repo_configuration \
 	PYTEST_PLUGINS=feast.infra.offline_stores.contrib.spark_offline_store.tests \
  	FEAST_USAGE=False IS_TEST=True \
- 	python -m pytest -n 8 --integration \
+ 	python -m pytest -n 8 --integration --tb=no -s -v \
  	 	-k "not test_historical_retrieval_fails_on_validation and \
 			not test_historical_retrieval_with_validation and \
 			not test_historical_features_persisting and \
