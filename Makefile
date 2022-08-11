@@ -111,6 +111,7 @@ test-python-universal-spark:
 			not test_lambda_materialization_consistency and \
 			not test_offline_write and \
 			not test_push_features_to_offline_store.py and \
+			not test_go_feature_server.py and \
 			not gcs_registry and \
 			not s3_registry and \
 			not test_universal_types" \
@@ -398,3 +399,18 @@ build-templates:
 # Note: requires node and yarn to be installed
 build-ui:
 	cd $(ROOT_DIR)/sdk/python/feast/ui && yarn install && npm run build --omit=dev
+
+test-python-universal-spark2:
+	PYTHONPATH='.' \
+	FULL_REPO_CONFIGS_MODULE=sdk.python.feast.infra.offline_stores.contrib.spark_repo_configuration \
+	PYTEST_PLUGINS=feast.infra.offline_stores.contrib.spark_offline_store.tests \
+	FEAST_USAGE=False IS_TEST=True \
+	python -m pytest -n 8 --integration \
+		--html=pytest_report.html \
+		-k "not gcs_registry and \
+			not s3_registry and \
+			not test_lambda_materialization" \
+	sdk/python/tests
+
+run:
+	docker-compose --file ./.launch-control/docker-compose.yaml up -d
