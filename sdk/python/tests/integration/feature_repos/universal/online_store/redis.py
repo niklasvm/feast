@@ -19,13 +19,10 @@ class RedisOnlineStoreCreator(OnlineStoreCreator):
         # wait_for_logs(
         #     container=self.container, predicate=log_string_to_wait_for, timeout=10
         # )
-        exposed_port = 6379 # self.container.get_exposed_port("6379")
+        # exposed_port = self.container.get_exposed_port("6379")
+        exposed_port = 6379
         return {"type": "redis", "connection_string": f"localhost:{exposed_port},db=0"}
 
     def teardown(self):
-        pass
         # self.container.stop()
-        
-if __name__ == "__main__":
-    creator = RedisOnlineStoreCreator(project_name = "temp_redis")
-    print(creator.create_online_store())
+        pass

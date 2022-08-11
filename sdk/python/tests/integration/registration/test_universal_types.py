@@ -287,6 +287,10 @@ def assert_expected_arrow_types(
     print("Asserting historical feature arrow types")
     historical_features_arrow = historical_features.to_arrow()
     print(historical_features_arrow)
+
+    historical_features_spark = historical_features.to_spark_df()
+    print(historical_features_spark)
+
     feature_list_dtype_to_expected_historical_feature_arrow_type = {
         "int32": pa.types.is_signed_integer,  # different offline stores could interpret integers differently
         "int64": pa.types.is_signed_integer,  # eg, Snowflake chooses the smallest possible (like int8)

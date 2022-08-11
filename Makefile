@@ -409,8 +409,18 @@ test-python-universal-spark2:
 		--html=pytest_report.html \
 		-k "not gcs_registry and \
 			not s3_registry and \
-			not test_lambda_materialization" \
+			not test_lambda_materialization and \
+			not test_nullable_online_store" \
 	sdk/python/tests
+
+test-nik:
+	PYTHONPATH='.' \
+	FULL_REPO_CONFIGS_MODULE=sdk.python.feast.infra.offline_stores.contrib.spark_repo_configuration \
+	PYTEST_PLUGINS=feast.infra.offline_stores.contrib.spark_offline_store.tests \
+	FEAST_USAGE=False IS_TEST=True \
+	python -m pytest -n 8 --integration \
+		--html=pytest_report.html \
+	sdk/python/tests/integration/registration/test_universal_types.py
 
 run:
 	docker-compose --file ./.launch-control/docker-compose.yaml up -d
