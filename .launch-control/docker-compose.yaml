@@ -1,0 +1,16 @@
+version: "3.6"
+services:
+  app:
+    image: feast-dev-image
+    build:
+      context: .
+      dockerfile: Dockerfile
+
+    sysctls:
+      - net.ipv4.tcp_keepalive_time=200
+      - net.ipv4.tcp_keepalive_intvl=200
+      - net.ipv4.tcp_keepalive_probes=5
+    volumes:
+    - "..:/root/feast"
+    - $HOME/.aws/:/root/.aws/
+    - "/var/run/docker.sock:/var/run/docker.sock"
