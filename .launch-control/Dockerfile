@@ -11,7 +11,8 @@ RUN apt-get update && \
 RUN cd /tmp && \
     git clone --depth 1 https://github.com/niklasvm/feast.git && \
     cd feast && \
-    pip install -e ".[dev]"
+    pip install -e ".[dev]" && \
+    pip uninstall -y feast
 
 
 ARG spark_version="3.3.0"
