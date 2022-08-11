@@ -5,6 +5,7 @@ RUN apt-get update && \
         mariadb-server \
         redis \
         curl && \
+        htop && \
     curl -sSL https://get.docker.com/ | sh
 
 RUN cd /tmp && \
