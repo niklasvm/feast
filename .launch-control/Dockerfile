@@ -3,6 +3,7 @@ FROM python
 RUN apt-get update && \
     apt-get install -y \
         mariadb-server \
+        redis \
         curl && \
     curl -sSL https://get.docker.com/ | sh
 
@@ -12,8 +13,8 @@ RUN cd /tmp && \
     pip install -e ".[dev]"
 
 
-ARG spark_version="3.2.0"
-ARG hadoop_version="3.2"
+ARG spark_version="3.3.0"
+ARG hadoop_version="3"
 ARG openjdk_version="11"
 
 ENV APACHE_SPARK_VERSION="${spark_version}" \
@@ -48,6 +49,5 @@ RUN ln -s "spark-${APACHE_SPARK_VERSION}-bin-hadoop${HADOOP_VERSION}" spark && \
 RUN cp -p "${SPARK_HOME}/conf/spark-defaults.conf.template" "${SPARK_HOME}/conf/spark-defaults.conf" && \
     echo 'spark.driver.extraJavaOptions -Dio.netty.tryReflectionSetAccessible=true' >> "${SPARK_HOME}/conf/spark-defaults.conf" && \
     echo 'spark.executor.extraJavaOptions -Dio.netty.tryReflectionSetAccessible=true' >> "${SPARK_HOME}/conf/spark-defaults.conf"
-
 
 ENTRYPOINT ["tail", "-f", "/dev/null"]
