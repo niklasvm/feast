@@ -12,6 +12,7 @@ import pyspark
 from pydantic import StrictStr
 from pyspark import SparkConf
 from pyspark.sql import SparkSession
+import pyarrow.parquet as pq
 from pytz import utc
 
 from feast import FeatureView, OnDemandFeatureView
