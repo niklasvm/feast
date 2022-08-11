@@ -289,7 +289,10 @@ def assert_expected_arrow_types(
     print(historical_features_arrow)
 
     historical_features_spark = historical_features.to_spark_df()
-    print(historical_features_spark)
+    print("Spark schema:")
+    print(historical_features_spark.printSchema())
+    print("Pandas schema:")
+    print(historical_features_spark.toPandas().dtypes)
 
     feature_list_dtype_to_expected_historical_feature_arrow_type = {
         "int32": pa.types.is_signed_integer,  # different offline stores could interpret integers differently
