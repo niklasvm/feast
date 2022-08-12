@@ -12,7 +12,8 @@ RUN cd /tmp && \
     git clone --depth 1 https://github.com/niklasvm/feast.git && \
     cd feast && \
     pip install -e ".[dev]" && \
-    pip uninstall -y feast
+    pip uninstall -y feast && \
+    pip install pytest-html
 
 
 ARG spark_version="3.3.0"
