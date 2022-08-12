@@ -420,7 +420,7 @@ test-nik:
 	FEAST_USAGE=False IS_TEST=True \
 	python -m pytest -n 8 --integration \
 		--html=pytest_report.html \
-	sdk/python/tests/integration/registration/test_universal_types.py
+	sdk/python/tests/integration/offline_store/test_offline_write.py
 
 run:
 	docker-compose --file ./.launch-control/docker-compose.yaml up -d
