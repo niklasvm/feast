@@ -61,7 +61,6 @@ class SparkDataSourceCreator(DataSourceCreator):
         self.spark_offline_store_config.staging_location = "file://" + str(
             tempfile.TemporaryDirectory()
         )
-        self.spark_offline_store_config.region = "eu-west-1"
         return self.spark_offline_store_config
 
     def create_data_source(

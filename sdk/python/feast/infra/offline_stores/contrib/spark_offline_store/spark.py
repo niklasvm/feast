@@ -52,9 +52,6 @@ class SparkOfflineStoreConfig(FeastConfigBaseModel):
     staging_location: Optional[StrictStr] = None
     """ Remote path for batch materialization jobs"""
 
-    region: Optional[StrictStr] = None
-    """ AWS Region if applicable for s3-based staging locations"""
-
 
 class SparkOfflineStore(OfflineStore):
     @staticmethod
@@ -379,7 +376,8 @@ class SparkRetrievalJob(RetrievalJob):
                 )
                 sdf.write.parquet(output_uri)
 
-                return _list_files_in_folder(output_uri)
+                return [output_uri]
+
             elif self._config.offline_store.staging_location.startswith("s3://"):
 
                 spark_compatible_s3_staging_location = (
@@ -394,9 +392,7 @@ class SparkRetrievalJob(RetrievalJob):
                 )
                 sdf.write.parquet(output_uri)
 
-                return aws_utils.list_s3_files(
-                    self._config.offline_store.region, output_uri
-                )
+                return [output_uri]
 
             else:
                 raise NotImplementedError(
@@ -506,17 +502,6 @@ def _format_datetime(t: datetime) -> str:
         t = t.astimezone(tz=utc)
     dt = t.strftime("%Y-%m-%d %H:%M:%S.%f")
     return dt
-
-
-def _list_files_in_folder(folder):
-    """List full filenames in a folder"""
-    files = []
-    for file in os.listdir(folder):
-        filename = os.path.join(folder, file)
-        if os.path.isfile(filename):
-            files.append(filename)
-
-    return files
 
 
 def _cast_data_frame(
