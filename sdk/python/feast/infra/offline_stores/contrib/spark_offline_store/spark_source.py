@@ -63,12 +63,12 @@ class SparkSource(DataSource):
             owner=owner,
         )
 
-        if not flags_helper.is_test():
-            warnings.warn(
-                "The spark data source API is an experimental feature in alpha development. "
-                "This API is unstable and it could and most probably will be changed in the future.",
-                RuntimeWarning,
-            )
+        # if not flags_helper.is_test():
+        #     warnings.warn(
+        #         "The spark data source API is an experimental feature in alpha development. "
+        #         "This API is unstable and it could and most probably will be changed in the future.",
+        #         RuntimeWarning,
+        #     )
 
         self.spark_options = SparkOptions(
             table=table,
