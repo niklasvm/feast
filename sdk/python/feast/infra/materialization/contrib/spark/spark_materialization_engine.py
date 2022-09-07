@@ -186,11 +186,11 @@ class SparkMaterializationEngine(BatchMaterializationEngine):
             k = len(spark_df.columns)
             
             
-            target = 300000
+            target = 500000
             batch_size = int(target/k) # 930
             partitions = int(n/batch_size)+1
 
-            print(f"{n} rows will be written to the online store in {partitions:,} batches of size {batch_size:,}")
+            print(f"{n,} rows will be written to the online store in {partitions:,} batches of size {batch_size:,}")
             
             spark_df.rdd.repartition(partitions).foreachPartition(
                 lambda x: _process_by_partition(x, spark_serialized_artifacts)
