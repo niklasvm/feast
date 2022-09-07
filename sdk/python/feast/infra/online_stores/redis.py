@@ -48,7 +48,9 @@ except ImportError as e:
 
     raise FeastExtrasDependencyImportError("redis", str(e))
 
-logger = logging.getLogger(__name__)
+
+
+
 
 
 class RedisType(str, Enum):
@@ -204,6 +206,7 @@ class RedisOnlineStore(OnlineStore):
         ts_key = f"_ts:{feature_view}"
         keys = []
         # redis pipelining optimization: send multiple commands to redis server without waiting for every reply
+
         with client.pipeline(transaction=False) as pipe:
             # check if a previous record under the key bin exists
             # TODO: investigate if check and set is a better approach rather than pulling all entity ts and then setting
@@ -219,6 +222,7 @@ class RedisOnlineStore(OnlineStore):
             prev_event_timestamps = pipe.execute()
             # flattening the list of lists. `hmget` does the lookup assuming a list of keys in the key bin
             prev_event_timestamps = [i[0] for i in prev_event_timestamps]
+
 
             for redis_key_bin, prev_event_time, (_, values, timestamp, _) in zip(
                 keys, prev_event_timestamps, data
@@ -250,7 +254,10 @@ class RedisOnlineStore(OnlineStore):
                     pipe.expire(
                         name=redis_key_bin, time=online_store_config.key_ttl_seconds
                     )
+
             results = pipe.execute()
+
+            
             if progress:
                 progress(len(results))
 

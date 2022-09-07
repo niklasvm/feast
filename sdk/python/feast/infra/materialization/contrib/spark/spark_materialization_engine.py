@@ -1,12 +1,15 @@
+import os
 import tempfile
 from dataclasses import dataclass
 from datetime import datetime
 from typing import Callable, List, Literal, Optional, Sequence, Union
+import uuid
 
 import dill
 import pandas as pd
 import pyarrow
 from tqdm import tqdm
+import pyspark.sql
 
 from feast.batch_feature_view import BatchFeatureView
 from feast.entity import Entity
@@ -33,6 +36,14 @@ from feast.utils import (
     _run_pyarrow_field_mapping,
 )
 
+from feast.infra.materialization.local_engine import DEFAULT_BATCH_SIZE
+
+import redis
+import time
+
+import logging
+logger = logging.getLogger(__name__)
+logging.basicConfig(filename='/home/rstudio/des-feast-feature-registry/log_file.log', encoding='utf-8',level=logging.DEBUG)
 
 class SparkMaterializationEngineConfig(FeastConfigBaseModel):
     """Batch Materialization Engine config for spark engine"""
@@ -169,12 +180,19 @@ class SparkMaterializationEngine(BatchMaterializationEngine):
                 feature_view=feature_view, repo_config=self.repo_config
             )
 
-            spark_df = offline_job.to_spark_df()
+            spark_df: pyspark.sql.DataFrame = offline_job.to_spark_df()
             
             n = spark_df.cache().count()
-            print(f"{n} rows will be written to the online store")
+            k = len(spark_df.columns)
             
-            spark_df.repartition(200).foreachPartition(
+            
+            target = 300000
+            batch_size = int(target/k) # 930
+            partitions = int(n/batch_size)+1
+
+            print(f"{n} rows will be written to the online store in {partitions:,} batches of size {batch_size:,}")
+            
+            spark_df.rdd.repartition(partitions).foreachPartition(
                 lambda x: _process_by_partition(x, spark_serialized_artifacts)
             )
 
@@ -227,17 +245,25 @@ class _SparkSerializedArtifacts:
 def _process_by_partition(rows, spark_serialized_artifacts: _SparkSerializedArtifacts):
     """Load pandas df to online store"""
 
+    name = str(uuid.uuid4())
+    t0 = time.time()
+
     # convert to pyarrow table
-    dicts = []
-    for row in rows:
-        dicts.append(row.asDict())
+    dicts = [row.asDict() for row in rows]
 
     df = pd.DataFrame.from_records(dicts)
     if df.shape[0] == 0:
         print("Skipping")
         return
 
+    rows, columns = df.shape
+    records = rows*columns
+
+    msg = f"{name}: {rows:} x {columns:}: Start"
+    logging.info(msg)
+
     table = pyarrow.Table.from_pandas(df)
+
 
     # unserialize artifacts
     feature_view, online_store, repo_config = spark_serialized_artifacts.unserialize()
@@ -251,11 +277,33 @@ def _process_by_partition(rows, spark_serialized_artifacts: _SparkSerializedArti
         entity.name: entity.dtype.to_value_type()
         for entity in feature_view.entity_columns
     }
-
-    rows_to_write = _convert_arrow_to_proto(table, feature_view, join_key_to_value_type)
+    batch = table
+    
+    rows_to_write = _convert_arrow_to_proto(
+        batch, feature_view, join_key_to_value_type
+    )
     online_store.online_write_batch(
         repo_config,
         feature_view,
         rows_to_write,
-        lambda x: None,
+        None,
     )
+    t1 = time.time()
+    msg = f"{name}: {rows:} x {columns:}: End: {t1-t0:,.2f}"
+    logger.info(msg)
+        
+
+    # rows_to_write = _convert_arrow_to_proto(table, feature_view, join_key_to_value_type)
+
+    # path = f"/home/rstudio/des-feast-feature-registry/data/{str(uuid.uuid4())}.parquet"
+    # os.makedirs(os.path.dirname(path),exist_ok=True)
+    # df.to_parquet(path)
+
+    
+
+    # online_store.online_write_batch(
+    #     repo_config,
+    #     feature_view,
+    #     rows_to_write,
+    #     lambda x: None,
+    # )
