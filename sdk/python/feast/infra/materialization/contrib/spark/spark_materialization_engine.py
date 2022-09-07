@@ -171,8 +171,8 @@ class SparkMaterializationEngine(BatchMaterializationEngine):
 
             spark_df = offline_job.to_spark_df()
             
-            # n = spark_df.cache().count()
-            # print(f"{n} rows will be written to the online store")
+            n = spark_df.cache().count()
+            print(f"{n} rows will be written to the online store")
             
             spark_df.repartition(200).foreachPartition(
                 lambda x: _process_by_partition(x, spark_serialized_artifacts)
